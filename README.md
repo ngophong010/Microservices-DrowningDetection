@@ -13,10 +13,12 @@ Overall, the drowning detection system provides an innovative and effective solu
 To set up the Drowning Detection project, follow these steps:
 
 1. **Clone the Project:** (With Test Sample Videos):
-```bash   
+```bash
    git clone https://github.com/randhana/Drowning-Detection-.git
 ```
-    **Clone the Project:** Without Test Sample Videos - Lightweight Version
+
+    **Clone the Project:** Without Test Sample Videos - Lightweight Version:
+    
 ```bash
    git clone --branch lightweight https://github.com/randhana/Drowning-Detection-.git
 ```
@@ -58,31 +60,19 @@ THIS IS FOR PYTHON KAFKA KUBERNETES MICROSERVICE ARCHITECTURE
 ```shell
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
-helm install kafka-local bitnami/kafka \
---set persistence.enabled=false,zookeeper.persistence.enabled=false
+helm install kafka-local bitnami/kafka --set persistence.enabled=false,zookeeper.persistence.enabled=false
 
-kubectl run kafka-local-client \
-    --restart='Never' \
-    --image docker.io/bitnami/kafka:3.3.1-debian-11-r19 \
-    --namespace drown-detector-microservice \
-    --command \
-    -- sleep infinity
+kubectl run kafka-local-client --restart='Never' --image docker.io/bitnami/kafka:3.3.1-debian-11-r19 --namespace drown-detector-microservice --command -- sleep infinity
 
 kubectl exec --tty -i kafka-local-client --namespace drown-detector-microservice -- bash
 ```
 ### Commands
 ```shell
 # Drowning Detect service
-kubectl run drown-detect-svc --rm --tty -i \
-    --image phongngolam/drown-detect-service  \
-    --restart Never \
-    --namespace drown-detector-microservice
+kubectl run drown-detect-svc --rm --tty -i --image phongngolam/drown-detect-service --restart Never --namespace drown-detector-microservice
     
 # Drowning alert service
-kubectl run drown-alert-svc --rm --tty -i \
-    --image phongngolam/drown-alert-service \
-    --restart Never \
-    --namespace drown-detector-microservice
+kubectl run drown-alert-svc --rm --tty -i --image phongngolam/drown-alert-service --restart Never --namespace drown-detector-microservice
 
 ### Kafka UI
 ```shell
