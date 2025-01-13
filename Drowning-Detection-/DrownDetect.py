@@ -18,6 +18,7 @@ import logging
 from kafka import KafkaProducer
 from datetime import datetime, timezone
 import uuid
+import pytz
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -44,7 +45,7 @@ def send_drowning_alert():
     message = {
         "video_id": video_id,
         "status": "drowning_detected",
-        "timestamp": datetime.now(timezone.utc).isoformat()
+        "timestamp": datetime.now(timezone('Asia/Ho_Chi_Minh')).isoformat()
     }
     try:
         producer.send(KAFKA_TOPIC, message)

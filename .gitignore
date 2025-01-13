@@ -3,4 +3,6 @@ cvlib/__pycache__/object_detection.cpython-37.pyc
 cvlib/__pycache__
 env/
 cvlib/resources
+.vscode
 cvlib/data/yolov3.weights
+Drowing-Detection-/cvlib/data/yolov3.weights

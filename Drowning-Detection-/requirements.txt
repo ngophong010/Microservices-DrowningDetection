@@ -36,3 +36,5 @@ typing-extensions==4.8.0
 urllib3==2.0.7
 kafka-python==2.0.2
 cvlib==0.2.7  # Check your version
+pytz==2024.2
+
