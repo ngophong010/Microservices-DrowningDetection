@@ -19,6 +19,7 @@ from kafka import KafkaProducer
 from datetime import datetime, timezone
 import uuid
 import pytz
+from pytz import timezone
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -42,10 +43,11 @@ def send_drowning_alert():
     Simulate the generation of a drowning detection alert message.
     """
     video_id = str(uuid.uuid4())
+    timezone = pytz.timezone("Asia/Ho_Chi_Minh")  # Corrected timezone assignment
     message = {
         "video_id": video_id,
         "status": "drowning_detected",
-        "timestamp": datetime.now(timezone('Asia/Ho_Chi_Minh')).isoformat()
+        "timestamp": datetime.now(timezone).isoformat()  # Use the timezone properly
     }
     try:
         producer.send(KAFKA_TOPIC, message)
@@ -183,16 +185,13 @@ def detectDrowning(source):
         else:
             out = frame
             
-        # display output
-        cv2.imshow("Real-time object detection", out)
+        # display output, I containerize the app so I don't need to display the output
+        # cv2.imshow("Real-time object detection", out)
 
         # press "Q" to stop
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            cap.release()
-            cv2.destroyAllWindows()
-            exit()
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     cap.release()
+        #     cv2.destroyAllWindows()
+        #     exit()
 
 detectDrowning(args.source)
-
-
-
