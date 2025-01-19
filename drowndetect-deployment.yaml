@@ -1,3 +1,4 @@
+# Deployment and Service for Drown Detect Service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
       - name: drown-detect
-        image: phongngolam/drown-detect-service:latest
+        image: phongngolam/drown-detect-service:v1
         ports:
         - containerPort: 5000
         resources:
@@ -38,4 +39,43 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 5000
+  type: ClusterIP
+---
+# Deplotymet and Service for Drown Alert Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drown-alert-deployment
+  labels:
+    app: drown-alert
+  template:
+    metadata:
+      labels:
+        app: drown-alert
+    spec:
+      replicas: 1
+      containers:
+      - name: drown-alert
+        image: phongngolam/drown-alert-service:v1
+        ports:
+        - containerPort: 5001
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "300m"
+          limits:
+            memory: "1Gi"
+            cpu: "600m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drown-alert-service
+spec:
+  selector:
+    app: drown-alert
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5001
   type: ClusterIP
