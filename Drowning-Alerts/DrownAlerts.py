@@ -1,11 +1,14 @@
 from kafka import KafkaConsumer
+from kafka.errors import KafkaError
+from kafka.admin import KafkaAdminClient, NewTopic
+from datetime import datetime
 import json
 import smtplib
 from email.mime.text import MIMEText
 import os
-# import logging
+import logging
 
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 # Kafka configurations
 KAFKA_TOPIC = "drowning-alerts"
@@ -21,8 +24,38 @@ consumer = KafkaConsumer(
     security_protocol="SASL_PLAINTEXT",
     sasl_mechanism="SCRAM-SHA-256",
     sasl_plain_username="user1",
+    sasl_plain_password="9WO6HhtXKB",
+
+    # Add these parameters for better debugging
+    enable_auto_commit=True,
+    session_timeout_ms=6000,
+    heartbeat_interval_ms=3000
+)
+
+admin_client = KafkaAdminClient(
+    bootstrap_servers=BOOTSTRAP_SERVER,
+    security_protocol="SASL_PLAINTEXT",
+    sasl_mechanism="SCRAM-SHA-256",
+    sasl_plain_username="user1",
     sasl_plain_password="9WO6HhtXKB"
 )
+
+# List all topics
+topics = admin_client.list_topics()
+print(f"Available topics: {topics}")
+
+# Add connection verification
+try:
+    # Check if consumer is connected
+    topics = consumer.topics()
+    print(f"Available topics: {topics}")
+    partitions = consumer.partitions_for_topic(KAFKA_TOPIC)
+    print(f"Partitions for {KAFKA_TOPIC}: {partitions}")
+    
+    # Check consumer group assignment
+    print(f"Assignment: {consumer.assignment()}")
+except KafkaError as e:
+    print(f"Kafka connection error: {e}")
 
 # Email Configuration
 # Mailtrap Email Configuration
@@ -33,7 +66,6 @@ SMTP_PASSWORD = '6571292c2bf2bb5a83bfb13a0cbec30d'  # Replace with your actual M
 
 SENDER_EMAIL = "hello@demomailtrap.com"
 RECEIVER_EMAIL = "ngophong1019@gmail.com"
-
 
 def send_email(subject, body, to_email):
     msg = MIMEText(body)
