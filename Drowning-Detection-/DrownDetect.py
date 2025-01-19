@@ -34,7 +34,12 @@ producer = KafkaProducer(
     security_protocol="SASL_PLAINTEXT",
     sasl_mechanism="SCRAM-SHA-256",
     sasl_plain_username="user1",
-    sasl_plain_password="9WO6HhtXKB"
+    sasl_plain_password="9WO6HhtXKB",
+
+    # Add these parameters
+    acks='all',
+    retries=3,
+    retry_backoff_ms=1000
 )
 
 # Send a message to Kafka
@@ -50,11 +55,22 @@ def send_drowning_alert():
         "timestamp": datetime.now(timezone).isoformat()  # Use the timezone properly
     }
     try:
-        producer.send(KAFKA_TOPIC, message)
-        # producer.flush()
-        print(f"Alert sent: {message}")
+    #     producer.send(KAFKA_TOPIC, message)
+    #     # producer.flush()
+    #     print(f"Alert sent: {message}")
+    # except Exception as e:
+    #     print(f"Failed to send alert: {e}")
+        # Add delivery confirmation
+        future = producer.send(KAFKA_TOPIC, message)
+        record_metadata = future.get(timeout=10)
+        print(f"Message sent successfully to topic {record_metadata.topic}")
+        print(f"Partition: {record_metadata.partition}")
+        print(f"Offset: {record_metadata.offset}")
     except Exception as e:
         print(f"Failed to send alert: {e}")
+        # Add producer metrics
+        metrics = producer.metrics()
+        print(f"Producer metrics: {json.dumps(metrics, indent=2)}")
 
 # Define command-line arguments
 parser = argparse.ArgumentParser()
@@ -85,7 +101,6 @@ class CustomCNN(nn.Module):
         x = self.fc2(x)
         return x
 
-
 print('Loading model and label binarizer...')
 lb = joblib.load('lb.pkl')
 model = CustomCNN()
@@ -112,7 +127,6 @@ def detectDrowning(source):
     else:
         cap = cv2.VideoCapture("videos/" + source)  # for video file input
 
-    
     if (cap.isOpened() == False):
         print('Error while trying to read video')
     frame_width = int(cap.get(3))
@@ -121,15 +135,14 @@ def detectDrowning(source):
 
         status, frame = cap.read()
 
-        # apply object detection
+        # Apply object detection
         bbox, label, conf = cv.detect_common_objects(frame)
         
-        # if only one person is detected, use model-based detection
+        # If only one person is detected, use model-based detection
         if len(bbox) == 1:
             bbox0 = bbox[0]
             #centre = np.zeros(s)
             centre = [0,0]
-
 
             for i in range(0, len(bbox)):
                 centre[i] =[(bbox[i][0]+bbox[i][2])/2,(bbox[i][1]+bbox[i][3])/2 ]
@@ -155,6 +168,8 @@ def detectDrowning(source):
                 isDrowning = True
                 # Trigger Kafka alert
                 send_drowning_alert()
+                # Add this line to stop the video when drowning is detected in my case just break the loop, because I use input from .mp4 file
+                cap.release()
             if(lb.classes_[preds] =='normal'):
                 isDrowning = False
             out = draw_bbox(frame, bbox, label, conf,isDrowning)
