@@ -1,0 +1,105 @@
+# Create a ConfigMap for Zookeeper configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zookeeper-config
+  namespace: drowning-detector
+data:
+  ZOOKEEPER_CLIENT_PORT: "2181"
+  ZOOKEEPER_TICK_TIME: "2000"
+
+---
+# Deploy Zookeeper (Kafka's coordination service)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper
+  namespace: drowning-detector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+      - name: zookeeper
+        image: confluentinc/cp-zookeeper:latest
+        ports:
+        - containerPort: 2181
+        envFrom:
+        - configMapRef:
+            name: zookeeper-config
+
+---
+# Create a Service for Zookeeper
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-service
+  namespace: drowning-detector
+spec:
+  selector:
+    app: zookeeper
+  ports:
+  - port: 2181
+    targetPort: 2181
+
+---
+# Create a ConfigMap for Kafka configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+  namespace: drowning-detector
+data:
+  KAFKA_ZOOKEEPER_CONNECT: "zookeeper-service:2181"
+  KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka-service:9092"
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+  KAFKA_SASL_ENABLED_MECHANISMS: "PLAIN,SCRAM-SHA-256"
+  KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: "PLAIN"
+
+---
+# Deploy Kafka
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+  namespace: drowning-detector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+      - name: kafka
+        image: confluentinc/cp-kafka:latest
+        ports:
+        - containerPort: 9092
+        envFrom:
+        - configMapRef:
+            name: kafka-config
+
+---
+# Create a Service for Kafka
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  namespace: drowning-detector
+spec:
+  selector:
+    app: kafka
+  ports:
+  - port: 9092
+    targetPort: 9092
