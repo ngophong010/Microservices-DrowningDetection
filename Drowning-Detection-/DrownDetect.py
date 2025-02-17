@@ -48,7 +48,7 @@ def send_drowning_alert():
     Simulate the generation of a drowning detection alert message.
     """
     video_id = str(uuid.uuid4())
-    timezone = pytz.timezone("Asia/Ho_Chi_Minh")  # Corrected timezone assignment
+    timezone = pytz.timezone("Asia/Ho_Chi_Minh")
     message = {
         "video_id": video_id,
         "status": "drowning_detected",
@@ -79,6 +79,7 @@ parser.add_argument('--source', required=True, help='Video source file name')
 # Parse command-line arguments
 args = parser.parse_args()
 
+print('Loading model and label binarizer...')
 lb = joblib.load('lb.pkl')
 class CustomCNN(nn.Module):
     def __init__(self):
@@ -90,6 +91,7 @@ class CustomCNN(nn.Module):
         self.fc1 = nn.Linear(128, 256)
         self.fc2 = nn.Linear(256, len(lb.classes_))
         self.pool = nn.MaxPool2d(2, 2)
+
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
@@ -101,18 +103,16 @@ class CustomCNN(nn.Module):
         x = self.fc2(x)
         return x
 
-print('Loading model and label binarizer...')
-lb = joblib.load('lb.pkl')
+# lb = joblib.load('lb.pkl')
 model = CustomCNN()
 print('Model Loaded...')
 model.load_state_dict(torch.load('model.pth', map_location='cpu'))
 model.eval()
 print('Loaded model state_dict...')
+
 aug = albumentations.Compose([
     albumentations.Resize(224, 224),
     ])
-
-t0 = time.time() #gives time in seconds after 1970
 
 def detectDrowning(source):
     isDrowning = False
@@ -129,10 +129,11 @@ def detectDrowning(source):
 
     if (cap.isOpened() == False):
         print('Error while trying to read video')
+
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
-    while(cap.isOpened()):
 
+    while(cap.isOpened()):
         status, frame = cap.read()
 
         # Apply object detection
@@ -172,7 +173,7 @@ def detectDrowning(source):
                 cap.release()
             if(lb.classes_[preds] =='normal'):
                 isDrowning = False
-            out = draw_bbox(frame, bbox, label, conf,isDrowning)
+            out = draw_bbox(frame, bbox, label, conf, isDrowning)
             
         # if more than one person is detected, use logic-based detection
         elif len(bbox) > 1:
@@ -208,5 +209,7 @@ def detectDrowning(source):
         #     cap.release()
         #     cv2.destroyAllWindows()
         #     exit()
+    
+    cap.release()
 
 detectDrowning(args.source)
