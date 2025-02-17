@@ -31,6 +31,11 @@ git clone https://github.com/randhana/Drowning-Detection-.git
 git clone --branch lightweight https://github.com/randhana/Drowning-Detection-.git
 ```
 
+#### Clone the Microservices Version of My Drowning Detection Project
+```bash
+git clone https://github.com/ngophong010/Microservices-DrowningDetection.git
+```
+
 ### Create a Virtual Environment
 ```bash
 python -m venv env
@@ -142,3 +147,15 @@ helm install kafka-ui kafka-ui/kafka-ui \
 ```bash
 kubectl port-forward svc/kafka-ui 8080:8080
 ```
+
+🔥 Drowning Detection - Enhanced Version
+This project is based on Drowning-Detection and has been improved for better compatibility, performance, and deployment on Kubernetes.
+
+🚀 Key Modifications
+Updated Dependencies: Adjusted requirements.txt for compatibility with Python 3.12.
+Microservices Enhancement: Optimized for deployment in a Kubernetes environment.
+Improved Logging & Debugging: Enhanced logging for better observability.
+Performance Tweaks: Refactored some parts to improve efficiency.
+📌 Original Repository
+The original project was created by @randhana(https://github.com/randhana), and you can find it here:
+🔗 Drowning-Detection on GitHub(https://github.com/randhana/Drowning-Detection-)
