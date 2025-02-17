@@ -1,4 +1,15 @@
-# Drwoning-Detector
+# 🔥 Drowning Detection - Enhanced Version
+This project is based on Drowning-Detection and has been improved for better compatibility, performance, and deployment on Kubernetes.
+
+## 🚀 Key Modifications
+- Updated Dependencies: Adjusted requirements.txt for compatibility with Python 3.12.
+- Microservices Enhancement: Optimized for deployment in a Kubernetes environment.
+- Improved Logging & Debugging: Enhanced logging for better observability.
+- Performance Tweaks: Refactored some parts to improve efficiency.
+
+## 📌 Original Repository
+The original project was created by @randhana(https://github.com/randhana), and you can find it here:
+🔗 Drowning-Detection on GitHub(https://github.com/randhana/Drowning-Detection-)
 
 ## Overview
 Introducing our drowning detection system, designed to detect and alert when someone is in danger of drowning.
@@ -148,14 +159,4 @@ helm install kafka-ui kafka-ui/kafka-ui \
 kubectl port-forward svc/kafka-ui 8080:8080
 ```
 
-🔥 Drowning Detection - Enhanced Version
-This project is based on Drowning-Detection and has been improved for better compatibility, performance, and deployment on Kubernetes.
 
-🚀 Key Modifications
-Updated Dependencies: Adjusted requirements.txt for compatibility with Python 3.12.
-Microservices Enhancement: Optimized for deployment in a Kubernetes environment.
-Improved Logging & Debugging: Enhanced logging for better observability.
-Performance Tweaks: Refactored some parts to improve efficiency.
-📌 Original Repository
-The original project was created by @randhana(https://github.com/randhana), and you can find it here:
-🔗 Drowning-Detection on GitHub(https://github.com/randhana/Drowning-Detection-)
