@@ -1,4 +1,4 @@
-# Deployment and Service for Drown Detect Service
+# Deployment for Drown Detect Service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,8 +18,9 @@ spec:
       containers:
       - name: drown-detect
         image: phongngolam/drown-detect-service:v1
-        ports:
-        - containerPort: 5000
+        # Remove ports since it's not a web service
+        command: ["python"]
+        args: ["DrownDetect.py", "--source", "drowning_001.mp4"]  # Add your video source
         resources:
           requests:
             memory: "512Mi"
@@ -28,37 +29,29 @@ spec:
             memory: "1Gi"
             cpu: "1"
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: drown-detect-service
-spec:
-  selector:
-    app: drown-detect
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 5000
-  type: ClusterIP
----
-# Deplotymet and Service for Drown Alert Service
+# Deployment for Drown Alert Service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: drown-alert-deployment
   labels:
     app: drown-alert
+spec:  # Fix the indentation here
+  replicas: 1
+  selector:    # Add this selector section
+    matchLabels:
+      app: drown-alert
   template:
     metadata:
       labels:
         app: drown-alert
     spec:
-      replicas: 1
       containers:
       - name: drown-alert
         image: phongngolam/drown-alert-service:v1
-        ports:
-        - containerPort: 5001
+        # Remove ports since it's not a web service
+        command: ["python"]
+        args: ["DrownAlerts.py"]
         resources:
           requests:
             memory: "256Mi"
@@ -66,16 +59,3 @@ metadata:
           limits:
             memory: "1Gi"
             cpu: "600m"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: drown-alert-service
-spec:
-  selector:
-    app: drown-alert
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 5001
-  type: ClusterIP
