@@ -19,6 +19,7 @@ from kafka import KafkaProducer
 from datetime import datetime, timezone
 import uuid
 import pytz
+from pytz import timezone
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -33,7 +34,12 @@ producer = KafkaProducer(
     security_protocol="SASL_PLAINTEXT",
     sasl_mechanism="SCRAM-SHA-256",
     sasl_plain_username="user1",
-    sasl_plain_password="9WO6HhtXKB"
+    sasl_plain_password="9WO6HhtXKB",
+
+    # Add these parameters
+    acks='all',
+    retries=3,
+    retry_backoff_ms=1000
 )
 
 # Send a message to Kafka
@@ -42,17 +48,29 @@ def send_drowning_alert():
     Simulate the generation of a drowning detection alert message.
     """
     video_id = str(uuid.uuid4())
+    timezone = pytz.timezone("Asia/Ho_Chi_Minh")
     message = {
         "video_id": video_id,
         "status": "drowning_detected",
-        "timestamp": datetime.now(timezone('Asia/Ho_Chi_Minh')).isoformat()
+        "timestamp": datetime.now(timezone).isoformat()  # Use the timezone properly
     }
     try:
-        producer.send(KAFKA_TOPIC, message)
-        # producer.flush()
-        print(f"Alert sent: {message}")
+    #     producer.send(KAFKA_TOPIC, message)
+    #     # producer.flush()
+    #     print(f"Alert sent: {message}")
+    # except Exception as e:
+    #     print(f"Failed to send alert: {e}")
+        # Add delivery confirmation
+        future = producer.send(KAFKA_TOPIC, message)
+        record_metadata = future.get(timeout=10)
+        print(f"Message sent successfully to topic {record_metadata.topic}")
+        print(f"Partition: {record_metadata.partition}")
+        print(f"Offset: {record_metadata.offset}")
     except Exception as e:
         print(f"Failed to send alert: {e}")
+        # Add producer metrics
+        metrics = producer.metrics()
+        print(f"Producer metrics: {json.dumps(metrics, indent=2)}")
 
 # Define command-line arguments
 parser = argparse.ArgumentParser()
@@ -61,6 +79,7 @@ parser.add_argument('--source', required=True, help='Video source file name')
 # Parse command-line arguments
 args = parser.parse_args()
 
+print('Loading model and label binarizer...')
 lb = joblib.load('lb.pkl')
 class CustomCNN(nn.Module):
     def __init__(self):
@@ -83,9 +102,7 @@ class CustomCNN(nn.Module):
         x = self.fc2(x)
         return x
 
-
-print('Loading model and label binarizer...')
-lb = joblib.load('lb.pkl')
+# lb = joblib.load('lb.pkl')
 model = CustomCNN()
 print('Model Loaded...')
 model.load_state_dict(torch.load('model.pth', map_location='cpu'))
@@ -94,8 +111,6 @@ print('Loaded model state_dict...')
 aug = albumentations.Compose([
     albumentations.Resize(224, 224),
     ])
-
-t0 = time.time() #gives time in seconds after 1970
 
 def detectDrowning(source):
     isDrowning = False
@@ -110,24 +125,23 @@ def detectDrowning(source):
     else:
         cap = cv2.VideoCapture("videos/" + source)  # for video file input
 
-    
     if (cap.isOpened() == False):
         print('Error while trying to read video')
+
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
-    while(cap.isOpened()):
 
+    while(cap.isOpened()):
         status, frame = cap.read()
 
-        # apply object detection
+        # Apply object detection
         bbox, label, conf = cv.detect_common_objects(frame)
         
-        # if only one person is detected, use model-based detection
+        # If only one person is detected, use model-based detection
         if len(bbox) == 1:
             bbox0 = bbox[0]
             #centre = np.zeros(s)
             centre = [0,0]
-
 
             for i in range(0, len(bbox)):
                 centre[i] =[(bbox[i][0]+bbox[i][2])/2,(bbox[i][1]+bbox[i][3])/2 ]
@@ -153,9 +167,11 @@ def detectDrowning(source):
                 isDrowning = True
                 # Trigger Kafka alert
                 send_drowning_alert()
+                # Add this line to stop the video when drowning is detected in my case just break the loop, because I use input from .mp4 file
+                cap.release()
             if(lb.classes_[preds] =='normal'):
                 isDrowning = False
-            out = draw_bbox(frame, bbox, label, conf,isDrowning)
+            out = draw_bbox(frame, bbox, label, conf, isDrowning)
             
         # if more than one person is detected, use logic-based detection
         elif len(bbox) > 1:
@@ -183,16 +199,15 @@ def detectDrowning(source):
         else:
             out = frame
             
-        # display output
-        cv2.imshow("Real-time object detection", out)
+        # display output, I containerize the app so I don't need to display the output
+        # cv2.imshow("Real-time object detection", out)
 
         # press "Q" to stop
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            cap.release()
-            cv2.destroyAllWindows()
-            exit()
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     cap.release()
+        #     cv2.destroyAllWindows()
+        #     exit()
+    
+    cap.release()
 
 detectDrowning(args.source)
-
-
-

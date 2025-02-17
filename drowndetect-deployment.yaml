@@ -1,0 +1,61 @@
+# Deployment for Drown Detect Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drown-detect-deployment
+  labels:
+    app: drown-detect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drown-detect
+  template:
+    metadata:
+      labels:
+        app: drown-detect
+    spec:
+      containers:
+      - name: drown-detect
+        image: phongngolam/drown-detect-service:v1
+        # Remove ports since it's not a web service
+        command: ["python"]
+        args: ["DrownDetect.py", "--source", "drowning_001.mp4"]  # Add your video source
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+---
+# Deployment for Drown Alert Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drown-alert-deployment
+  labels:
+    app: drown-alert
+spec:  # Fix the indentation here
+  replicas: 1
+  selector:    # Add this selector section
+    matchLabels:
+      app: drown-alert
+  template:
+    metadata:
+      labels:
+        app: drown-alert
+    spec:
+      containers:
+      - name: drown-alert
+        image: phongngolam/drown-alert-service:v1
+        # Remove ports since it's not a web service
+        command: ["python"]
+        args: ["DrownAlerts.py"]
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "300m"
+          limits:
+            memory: "1Gi"
+            cpu: "600m"
