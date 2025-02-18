@@ -34,7 +34,6 @@ venv/
 *.xlsx
 *.json
 *.xml
-*.yaml
 *.md
 
 # Ignore media files

@@ -15,4 +15,4 @@ RUN ls -la /app
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-CMD ["python", "DrownAlerts.py"]
+CMD ["python", "drown-alert.py"]

@@ -41,7 +41,7 @@ COPY . ./
 RUN ls -la /app
 
 # Command to run your Python script to process `.mp4` files
-ENTRYPOINT ["python", "/app/DrownDetect.py"]
+ENTRYPOINT ["python", "/app/drown-detect.py"]
 
 # Allow arguments to be passed for video source
 CMD ["--source", "drowning_001.mp4"]
