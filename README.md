@@ -130,6 +130,10 @@ kubectl cp --namespace drown-detector-microservice ./client.properties kafka-loc
 kubectl exec --tty -i kafka-local-client --namespace drown-detector-microservice -- bash
 ```
 
+If You want to use Helm charts:
+cd Helm_charts/Apache-kafka
+
+
 ### Deploy Services
 #### Drowning Detect Service
 ```bash
