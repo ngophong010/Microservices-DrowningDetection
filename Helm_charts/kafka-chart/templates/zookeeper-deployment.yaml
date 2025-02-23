@@ -1,0 +1,31 @@
+{{- if .Values.zookeeper.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-zookeeper
+  labels:
+    app: {{ .Release.Name }}-zookeeper
+spec:
+  replicas: {{ .Values.zookeeper.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-zookeeper
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          image: "{{ .Values.zookeeper.image.repository }}:{{ .Values.zookeeper.image.tag }}"
+          imagePullPolicy: {{ .Values.zookeeper.image.pullPolicy }}
+          ports:
+            - containerPort: 2181
+          volumeMounts:
+            - name: zookeeper-data
+              mountPath: /bitnami/zookeeper
+      volumes:
+        - name: zookeeper-data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-zookeeper-pvc
+{{- end }}
