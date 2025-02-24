@@ -1,32 +1,13 @@
 # Base image with Python
-FROM python:3.9-slim
+FROM python:3.12-slim
 
-# Set environment variables to prevent Python output buffering and .pyc generation
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
-ENV QT_QPA_PLATFORM=offscreen
-ENV OPENCV_VIDEOIO_PRIORITY=5000
-# Set environment variables (e.g. for KAFKA_BROKER and any other config you need)
-ENV KAFKA_BROKER="kafka-local.drowning-detector.svc.cluster.local:9092"
-
-# Install system dependencies for OpenCV and other tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    g++ \
-    libssl-dev \
-    libx11-xcb1 \
-    libxcb-render0 \
-    libxcb-shm0 \
-    libxcb-xfixes0 \
-    libxcb1 \
-    qtbase5-dev \
-    qtchooser \
-    qt5-qmake \
-    qtbase5-dev-tools \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-    
 # Set the working directory in the container
 WORKDIR /app
+
+# Install system dependencies (e.g., for OpenCV, if needed)
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file to the container
 COPY requirements.txt ./
@@ -35,13 +16,25 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy all the application source code
-COPY . ./
+COPY drown-detect.py .
+# Copy the cvlib directory with object_detection.py
+COPY cvlib/ cvliv/   
+COPY cvlib/data/ data/
+
+# Copy Kafka client configuration
+COPY client.properties /etc/kafka/client.properties
 
 # Debugging step: List files in the /app directory to ensure correct copying
 RUN ls -la /app
 
+COPY client.properties /etc/kafka/client.properties
+
+# Set environment variables (optional, can be overridden by Helm)
+ENV KAFKA_BROKER=kafka-local:9092
+ENV VIDEO_FILE="drowning_001.mp4"
+
 # Command to run your Python script to process `.mp4` files
-ENTRYPOINT ["python", "/app/drown-detect.py"]
+# ENTRYPOINT ["python", "/app/drown-detect.py"]
 
 # Allow arguments to be passed for video source
-CMD ["--source", "drowning_001.mp4"]
+CMD ["python", "drown-detect.py", "--source", "$VIDEO_FILE"]

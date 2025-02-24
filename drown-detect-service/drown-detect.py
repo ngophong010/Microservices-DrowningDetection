@@ -24,8 +24,8 @@ from pytz import timezone
 logging.basicConfig(level=logging.DEBUG)
 
 # Kafka configurations
-KAFKA_TOPIC = "drowning-alerts"
-BOOTSTRAP_SERVER = os.getenv("KAFKA_BROKER", "kafka-local.drowning-detector.svc.cluster.local:9092")
+KAFKA_TOPIC = "drowning-events"
+BOOTSTRAP_SERVER = os.getenv("KAFKA_BROKER", "kafka-local:9092")
 
 # Create Kafka producer
 producer = KafkaProducer(
@@ -34,43 +34,13 @@ producer = KafkaProducer(
     security_protocol="SASL_PLAINTEXT",
     sasl_mechanism="SCRAM-SHA-256",
     sasl_plain_username="user1",
-    sasl_plain_password="9WO6HhtXKB",
+    sasl_plain_password="KAFKA_PASSWORD", # set via environment variable
 
     # Add these parameters
     acks='all',
     retries=3,
     retry_backoff_ms=1000
 )
-
-# Send a message to Kafka
-def send_drowning_alert():
-    """
-    Simulate the generation of a drowning detection alert message.
-    """
-    video_id = str(uuid.uuid4())
-    timezone = pytz.timezone("Asia/Ho_Chi_Minh")
-    message = {
-        "video_id": video_id,
-        "status": "drowning_detected",
-        "timestamp": datetime.now(timezone).isoformat()  # Use the timezone properly
-    }
-    try:
-    #     producer.send(KAFKA_TOPIC, message)
-    #     # producer.flush()
-    #     print(f"Alert sent: {message}")
-    # except Exception as e:
-    #     print(f"Failed to send alert: {e}")
-        # Add delivery confirmation
-        future = producer.send(KAFKA_TOPIC, message)
-        record_metadata = future.get(timeout=10)
-        print(f"Message sent successfully to topic {record_metadata.topic}")
-        print(f"Partition: {record_metadata.partition}")
-        print(f"Offset: {record_metadata.offset}")
-    except Exception as e:
-        print(f"Failed to send alert: {e}")
-        # Add producer metrics
-        metrics = producer.metrics()
-        print(f"Producer metrics: {json.dumps(metrics, indent=2)}")
 
 # Define command-line arguments
 parser = argparse.ArgumentParser()
@@ -80,7 +50,7 @@ parser.add_argument('--source', required=True, help='Video source file name')
 args = parser.parse_args()
 
 print('Loading model and label binarizer...')
-lb = joblib.load('lb.pkl')
+lb = joblib.load('models/lb.pkl')
 class CustomCNN(nn.Module):
     def __init__(self):
         super(CustomCNN, self).__init__()
@@ -106,7 +76,7 @@ class CustomCNN(nn.Module):
 # lb = joblib.load('lb.pkl')
 model = CustomCNN()
 print('Model Loaded...')
-model.load_state_dict(torch.load('model.pth', map_location='cpu'))
+model.load_state_dict(torch.load('models/model.pth', map_location='cpu'))
 model.eval()
 print('Loaded model state_dict...')
 
