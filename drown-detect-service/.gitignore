@@ -4,6 +4,7 @@ cvlib/__pycache__
 env/
 cvlib/resources
 cvlib/data/yolov3.weights
+unused/
 
 # Ignore Python cache files
 __pycache__/
@@ -55,3 +56,6 @@ dist/
 *.bak
 *.swp
 .DS_Store
+
+# Ignore model weights
+*.weights
