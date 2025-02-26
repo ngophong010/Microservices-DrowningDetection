@@ -15,4 +15,6 @@ RUN ls -la /app
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
+COPY client.properties /etc/kafka/client.properties
+
 CMD ["python", "drown-alert.py"]
