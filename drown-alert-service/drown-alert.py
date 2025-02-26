@@ -11,8 +11,8 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 # Kafka configurations
-KAFKA_TOPIC = "drowning-alerts"
-BOOTSTRAP_SERVER = os.getenv("KAFKA_BROKER", "kafka-local.drowning-detector.svc.cluster.local:9092")
+KAFKA_TOPIC = "drowning-events"
+BOOTSTRAP_SERVER = os.getenv("KAFKA_BROKER", "kafka-local:9092")
 
 # Kafka Consumer Configuration
 consumer = KafkaConsumer(
@@ -24,7 +24,7 @@ consumer = KafkaConsumer(
     security_protocol="SASL_PLAINTEXT",
     sasl_mechanism="SCRAM-SHA-256",
     sasl_plain_username="user1",
-    sasl_plain_password="9WO6HhtXKB",
+    sasl_plain_password="KAFKA_PASSWORD",
 
     # Add these parameters for better debugging
     enable_auto_commit=True,
