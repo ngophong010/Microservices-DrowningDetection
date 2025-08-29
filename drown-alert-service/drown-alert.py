@@ -7,6 +7,7 @@ import smtplib
 from email.mime.text import MIMEText
 import os
 import logging
+import requests
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -57,6 +58,12 @@ try:
 except KafkaError as e:
     print(f"Kafka connection error: {e}")
 
+# Twilio Configuration
+TWILIO_SID = os.getenv("TWILIO_SID", "your-twilio-sid")
+TWILIO_TOKEN = os.getenv("TWILIO_TOKEN", "your-twilio-token")
+TWILIO_FROM = os.getenv("TWILIO_FROM", "+1234567890")
+PHONE_TO = "0328561871"  # Replace with your number
+
 # Email Configuration
 # Mailtrap Email Configuration
 SMTP_SERVER = 'live.smtp.mailtrap.io'
@@ -66,6 +73,18 @@ SMTP_PASSWORD = '6571292c2bf2bb5a83bfb13a0cbec30d'  # Replace with your actual M
 
 SENDER_EMAIL = "hello@demomailtrap.com"
 RECEIVER_EMAIL = "ngophong1019@gmail.com"
+
+def send_sms(to_phone, message):
+    try:
+        response = requests.post(
+            f"https://api.twilio.com/2010-04-01/Accounts/{TWILIO_SID}/Messages.json",
+            auth=(TWILIO_SID, TWILIO_TOKEN),
+            data={"From": TWILIO_FROM, "To": to_phone, "Body": message}
+        )
+        response.raise_for_status()
+        print(f"SMS sent to {to_phone}")
+    except Exception as e:
+        print(f"Failed to send SMS: {e}")
 
 def send_email(subject, body, to_email):
     msg = MIMEText(body)
@@ -82,19 +101,17 @@ def send_email(subject, body, to_email):
     except Exception as e:
         print(f"Failed to send email: {e}")
 
+
 # Consume and Send Alerts
 print("Listening for drowning alerts...")
+# In the consumer loop
 for message in consumer:
     try:
-        alert_data = message.value # Deserialize message
+        alert_data = message.value
         print(f"Received Alert: {alert_data}")
-
-        # Customize email content
-        alert = f"Drowning Alert:\n\n{json.dumps(alert_data, indent=2)}"  # Format dict for readability
         subject = "Emergency Alert: Drowning Detected!"
-
-        # Send the email
+        alert = f"Drowning Alert:\n\n{json.dumps(alert_data, indent=2)}"
         send_email(subject, alert, RECEIVER_EMAIL)
-
+        send_sms(PHONE_TO, f"Drowning detected in {alert_data.get('source', 'unknown')}")
     except Exception as e:
         print(f"Error processing message: {e}")
