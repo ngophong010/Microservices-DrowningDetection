@@ -20,6 +20,14 @@ from datetime import datetime, timezone
 import uuid
 import pytz
 from pytz import timezone
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/health", status_code=200)
+def health_check():
+    return {"status": "ok"}
+
 
 logging.basicConfig(level=logging.DEBUG)
 
