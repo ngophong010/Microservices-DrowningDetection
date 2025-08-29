@@ -1,0 +1,5 @@
+# Helm_charts/drown-alert/templates/_helpers.tpl
+{{/* Generate chart name */}}
+{{- define "drown-alert.name" -}}
+{{- .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}

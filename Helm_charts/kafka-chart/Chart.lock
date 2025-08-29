@@ -1,0 +1,6 @@
+dependencies:
+- name: zookeeper
+  repository: https://charts.bitnami.com/bitnami
+  version: 13.7.1
+digest: sha256:7399145a328db3e4090503bbba4545c5b36542bec0dc142be4a156bbd23496e8
+generated: "2025-02-23T23:09:50.0726662+07:00"

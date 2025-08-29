@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "drown-detect.fullname" . }}
+  labels:
+    {{- include "drown-detect.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "drown-detect.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "drown-detect.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: {{ .Values.app.command }}
+          env:
+            - name: KAFKA_BROKER
+              value: {{ .Values.env.KAFKA_BROKER }}
+            - name: KAFKA_PASSWORD
+              value: {{ .Values.env.KAFKA_PASSWORD }}
+            - name: VIDEO_FILE
+              value: {{ .Values.env.VIDEO_FILE }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: kafka-config
+          configMap:
+            name: {{ include "drown-detect.fullname" . }}-config

@@ -1,0 +1,74 @@
+# Default values for kafka-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: bitnami/kafka
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "3.6.1"
+
+# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: ClusterIP
+  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  port: 9092
+
+persistence:
+  enabled: true
+  size: 2Gi
+  storageClass: ""
+
+zookeeper:
+  enabled: true
+  # This sets the zookeeper service name
+  replicaCount: 1
+  image:
+    repository: bitnami/zookeeper
+    pullPolicy: IfNotPresent
+    tag: 3.8.0
+  persistence:
+    enabled: true
+    size: 1Gi
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  requests:
+    memery: "512Mi"
+    cpu: "500m"
+  limits:
+    memery: "1Gi"
+    cpu: "1"
+
+kafka:
+  heapOpts: "-Xmx1g -Xms512m"
+  configuration: |
+    auto.create.topics.enable=true
+    default.replication.factor=1
+    offsets.topic.replication.factor=1
+
+ingress:
+  enabled: false
+  # Used to create an Ingress record.
+  hosts:
+    - host: kafka.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+tls: [] # Add TLS configuration
+          

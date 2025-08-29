@@ -4,5 +4,3 @@ cvlib/__pycache__
 env/
 cvlib/resources
 .vscode
-cvlib/data/yolov3.weights
-Drowing-Detection-/cvlib/data/yolov3.weights

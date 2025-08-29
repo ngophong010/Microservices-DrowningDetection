@@ -86,6 +86,21 @@ For more details on YOLO object detection, visit their [official website](https:
 This project uses Python, Kafka, Kubernetes, and a microservices-based architecture. Below are the instructions for setting up and deploying related components.
 
 ### Install Kafka
+
+
+## Install Kafka with Helm Charts
+A Helm chart to deploy Apache Kafka on Kubernetes.
+
+### Prerequisites
+- Kubernetes 1.19+
+- Helm 3.0+
+
+### Installation
+```bash
+helm install my-kafka ./my-kafka-chart
+```
+
+## Install Kafka manually
 1. Add the Bitnami Helm repository:
 ```bash
 helm repo add bitnami https://charts.bitnami.com/bitnami

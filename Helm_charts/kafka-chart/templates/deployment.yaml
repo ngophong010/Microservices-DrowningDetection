@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-kafka
+  labels:
+    app: {{ .Release.Name }}-kafka
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-kafka
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-kafka
+    spec:
+      containers:
+        - name: kafka
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: KAFKA_HEAP_OPTS
+              value: {{ .Values.kafka.heapOpts }}
+            - name: KAFKA_CFG_ZOOKEEPER_CONNECT
+              value: {{ .Release.Name }}-zookeeper:2181
+            - name: KAFKA_CFG_LISTENERS
+              value: PLAINTEXT://:9092
+            - name: KAFKA_CFG_ADVERTISED_LISTENERS
+              value: PLAINTEXT://{{ .Release.Name }}-kafka:9092
+            - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
+          ports:
+            - containerPort: 9092
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /bitnami/kafka
+          resoures:
+            {{ toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: kafka-data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-kafka

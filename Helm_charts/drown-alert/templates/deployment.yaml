@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "drown-alert.fullname" . }}
+  labels:
+    {{- include "drown-alert.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "drown-alert.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "drown-alert.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.config.enabled }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-drown-alert-config
+        {{- end }}
